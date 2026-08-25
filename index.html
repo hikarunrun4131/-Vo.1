@@ -1,31 +1,816 @@
-<!doctype html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>退院支援ナビ v0.3</title><style>
-*{box-sizing:border-box}body{margin:0;font-family:Yu Gothic,Meiryo,Arial,sans-serif;background:#f4f7fb;color:#263746}header{height:62px;background:#173b63;color:#fff;display:flex;align-items:center;padding:0 20px;font-size:20px;font-weight:700;position:sticky;top:0;z-index:5}header small{font-size:11px;font-weight:400;opacity:.8;margin-left:12px}nav{position:fixed;top:62px;bottom:0;width:220px;background:#fff;border-right:1px solid #d9e2eb;padding:14px 10px}nav button{width:100%;border:0;background:transparent;text-align:left;padding:12px;border-radius:7px;margin:3px 0;color:#30485b;cursor:pointer}nav button.active{background:#e8f1fa;color:#145da0;font-weight:700}main{margin-left:220px;padding:24px;max-width:1450px}.screen{display:none}.screen.active{display:block}h1{margin:0 0 6px;font-size:24px}.sub{color:#6b7d8d;font-size:13px}.cards{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-top:18px}.card,.box,.result,.detail{background:#fff;border:1px solid #d9e4ed;border-radius:10px;padding:17px;box-shadow:0 1px 4px rgba(45,72,95,.06)}.num{font-size:29px;font-weight:700;margin-top:7px}.green{color:#237a3b}.red{color:#b3261e}.blue{color:#145da0}.box{margin-top:18px}.sec{border-top:1px solid #e4ebf0;margin-top:16px;padding-top:14px}.sec:first-child{border-top:0;margin-top:0;padding-top:0}.title{font-size:14px;font-weight:700;color:#31546e;margin-bottom:8px}.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}.field label{display:block;font-size:12px;font-weight:700;margin-bottom:4px}.field input,.field select,textarea{width:100%;padding:9px;border:1px solid #b9c8d6;border-radius:6px;background:#fff;color:#263746}.checks{display:flex;flex-wrap:wrap;gap:7px}.checks label{font-size:12px;background:#f5f8fa;padding:7px 9px;border-radius:6px}.primary,.secondary{border-radius:6px;padding:10px 16px;cursor:pointer;font-weight:700;margin-top:15px}.primary{background:#1d6fa5;color:#fff;border:0}.secondary{background:#fff;color:#1d6fa5;border:1px solid #1d6fa5}.results{display:grid;gap:12px;margin-top:14px}.result{display:grid;grid-template-columns:52px 1fr 180px;gap:12px;align-items:center}.rank{font-size:25px;font-weight:700;text-align:center;color:#315d82}.facility{font-size:17px;font-weight:700}.tags span{display:inline-block;background:#edf5fb;border-radius:999px;padding:4px 8px;margin:5px 4px 0 0;font-size:10px}.distance{color:#145da0;font-weight:700}.update{font-size:11px;color:#63788b;margin-top:5px}.detailgrid{display:grid;grid-template-columns:1fr 1fr;gap:8px}.detailrow{padding:9px;border-bottom:1px solid #edf1f4;font-size:13px}.detailrow b{display:inline-block;width:150px}.note{background:#fff8e6;border:1px solid #eedaa5;padding:10px;border-radius:7px;font-size:12px;margin-top:12px}table{width:100%;border-collapse:collapse;background:#fff;margin-top:18px}th,td{padding:10px;border-bottom:1px solid #e5ebf0;text-align:left;font-size:12px}th{background:#eef4f8}.badge{padding:4px 7px;border-radius:999px;font-size:10px;font-weight:700}.ok{background:#e6f4ea;color:#237a3b}.warn{background:#fff3cd;color:#8a6100}.bad{background:#fde8e7;color:#b3261e}.mobile{display:none}
-@media(max-width:850px){header{height:56px;font-size:17px;padding:0 14px}header small{display:none}nav{display:none}main{margin:0;padding:14px 12px 78px}.cards{grid-template-columns:1fr 1fr;gap:9px}.grid{grid-template-columns:1fr 1fr}.result{grid-template-columns:42px 1fr}.result>div:last-child{grid-column:2}.detailgrid{grid-template-columns:1fr}.mobile{display:flex;position:fixed;left:0;right:0;bottom:0;height:62px;background:#fff;border-top:1px solid #d9e2eb;z-index:10}.mobile button{flex:1;border:0;background:#fff;color:#526879;font-size:10px}.mobile button.active{color:#145da0;font-weight:700;background:#f0f6fb}}
-@media(max-width:480px){.grid{grid-template-columns:1fr}h1{font-size:21px}.facility{font-size:15px}}
+<!doctype html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>退院支援ナビ v2.0（試作品）</title><style>
+*{box-sizing:border-box}body{margin:0;font-family:Yu Gothic,Meiryo,Arial,sans-serif;background:#f4f7fb;color:#263746}header{height:68px;background:#173b63;color:#fff;display:flex;align-items:center;padding:0 24px;font-size:23px;font-weight:800;position:sticky;top:0;z-index:5}header small{font-size:11px;font-weight:400;opacity:.8;margin-left:12px}nav{position:fixed;top:58px;left:0;bottom:0;width:250px;box-sizing:border-box;overflow-y:auto;background:#fff;border-right:1px solid #d9e2eb;padding:14px 10px;z-index:20}nav button{width:100%;border:0;background:transparent;text-align:left;padding:14px;border-radius:8px;margin:3px 0;color:#30485b;cursor:pointer;font-size:16px}nav button.active{background:#e8f1fa;color:#145da0;font-weight:700}main{margin-left:250px;padding:28px 28px 40px;max-width:none;width:calc(100% - 250px);box-sizing:border-box;min-height:calc(100vh - 58px);overflow-x:hidden}.screen{display:none}.screen.active{display:block}h1{margin:0 0 8px;font-size:29px;line-height:1.25;font-weight:800}.sub{color:#607485;font-size:14px;line-height:1.6}.cards{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-top:18px}.card,.box,.result,.detail{background:#fff;border:1px solid #d9e4ed;border-radius:10px;padding:17px;box-shadow:0 1px 4px rgba(45,72,95,.06)}.num{font-size:29px;font-weight:700;margin-top:7px}.green{color:#237a3b}.red{color:#b3261e}.blue{color:#145da0}.box{margin-top:18px}.sec{border-top:1px solid #e4ebf0;margin-top:16px;padding-top:14px}.sec:first-child{border-top:0;margin-top:0;padding-top:0}.title{font-size:17px;font-weight:800;color:#294e69;margin-bottom:10px}.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}.field label{display:block;font-size:13px;font-weight:800;margin-bottom:5px}.field input,.field select,textarea{width:100%;padding:9px;border:1px solid #b9c8d6;border-radius:6px;background:#fff;color:#263746}.checks{display:flex;flex-wrap:wrap;gap:7px}.checks label{font-size:13px;background:#f5f8fa;padding:8px 10px;border-radius:7px}.primary,.secondary{border-radius:6px;padding:10px 16px;cursor:pointer;font-weight:700;margin-top:15px}.primary{background:#1d6fa5;color:#fff;border:0}.secondary{background:#fff;color:#1d6fa5;border:1px solid #1d6fa5}.results{display:grid;gap:12px;margin-top:14px}.result{display:grid;grid-template-columns:52px 1fr 180px;gap:12px;align-items:center}.rank{font-size:25px;font-weight:700;text-align:center;color:#315d82}.facility{font-size:19px;font-weight:800;line-height:1.4}.tags span{display:inline-block;background:#edf5fb;border-radius:999px;padding:4px 8px;margin:5px 4px 0 0;font-size:10px}.distance{color:#145da0;font-weight:800;font-size:16px}.update{font-size:12px;color:#63788b;margin-top:6px;line-height:1.5}.detailgrid{display:grid;grid-template-columns:1fr 1fr;gap:8px}.detailrow{padding:10px;border-bottom:1px solid #edf1f4;font-size:14px;line-height:1.5}.detailrow b{display:inline-block;width:170px;font-weight:800}.note{background:#fff8e6;border:1px solid #eedaa5;padding:10px;border-radius:7px;font-size:12px;margin-top:12px}table{width:100%;border-collapse:collapse;background:#fff;margin-top:18px}th,td{padding:10px;border-bottom:1px solid #e5ebf0;text-align:left;font-size:12px}th{background:#eef4f8}.badge{padding:4px 7px;border-radius:999px;font-size:10px;font-weight:700}.ok{background:#e6f4ea;color:#237a3b}.warn{background:#fff3cd;color:#8a6100}.bad{background:#fde8e7;color:#b3261e}.mobile{display:none}
+@media(max-width:700px){main{margin:0!important;padding:18px 13px 82px!important;width:100%!important;box-sizing:border-box}header{height:58px;font-size:19px;padding:0 14px}header small{display:none}nav{display:none}.cards{grid-template-columns:1fr 1fr;gap:9px}.grid{grid-template-columns:1fr 1fr}.result{grid-template-columns:42px 1fr}.result>div:last-child{grid-column:2}.detailgrid{grid-template-columns:1fr}.mobile{display:flex;position:fixed;left:0;right:0;bottom:0;height:62px;background:#fff;border-top:1px solid #d9e2eb;z-index:30}.mobile button{flex:1;border:0;background:#fff;color:#526879;font-size:10px}.mobile button.active{color:#145da0;font-weight:700;background:#f0f6fb}}
+@media(max-width:480px){.grid{grid-template-columns:1fr}h1{font-size:25px}.facility{font-size:17px}}
+
+.update-panel{margin-top:16px;background:#f7fafc;border:1px solid #d9e4ed;border-radius:9px;padding:15px}
+.update-panel h3{margin:0 0 10px;font-size:17px;color:#294e69}
+.update-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.update-panel label{display:block;font-size:12px;font-weight:800;margin-bottom:4px}
+.update-panel input,.update-panel select,.update-panel textarea{width:100%;padding:9px;border:1px solid #b9c8d6;border-radius:6px;background:#fff}
+.update-panel textarea{margin-top:5px}
+.save-update{background:#1d6fa5;color:#fff;border:0;border-radius:7px;padding:10px 16px;font-weight:800;cursor:pointer;margin-top:10px}
+.cancel-update{background:#fff;color:#1d6fa5;border:1px solid #1d6fa5;border-radius:7px;padding:10px 16px;font-weight:800;cursor:pointer;margin:10px 0 0 6px}
+@media(max-width:850px){.update-grid{grid-template-columns:1fr 1fr}}
+@media(max-width:480px){.update-grid{grid-template-columns:1fr}}
+
+.history{margin-top:16px;border-top:1px solid #e4ebf0;padding-top:14px}
+.history h3{font-size:17px;margin:0 0 9px;color:#294e69}
+.history-item{background:#f7fafc;border-left:4px solid #7ba7c9;padding:9px 11px;margin:7px 0;border-radius:5px;font-size:12px;line-height:1.55}
+.quick-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+.quick-actions button{margin-top:0}
+.resource-card{background:#fff;border:1px solid #d9e4ed;border-radius:10px;padding:16px;margin-top:14px}
+
+.settings-list{display:flex;flex-wrap:wrap;gap:7px}
+.settings-chip{display:inline-flex;align-items:center;gap:6px;background:#eef5fa;border:1px solid #cddde9;border-radius:999px;padding:7px 10px;font-size:12px}
+.settings-chip button{border:0;background:transparent;color:#7a3d3d;cursor:pointer;font-weight:800}
+.route-btn{display:inline-block;margin-top:7px;padding:7px 9px;border:1px solid #1d6fa5;border-radius:6px;color:#1d6fa5;text-decoration:none;font-size:12px;font-weight:800}
+
+.direct-edit{margin-top:14px;padding:16px;border:1px solid #d7e3ec;border-radius:10px;background:#f7fafc}
+.direct-edit h3{margin:0 0 12px;color:#294e69;font-size:18px}
+.edit-section{margin-top:14px;padding-top:12px;border-top:1px solid #e2e9ee}
+.edit-section:first-of-type{border-top:0;margin-top:0;padding-top:0}
+.edit-row{display:grid;grid-template-columns:180px 1fr 1fr;gap:10px;align-items:center;padding:8px 0}
+.edit-row .label{font-weight:800;font-size:13px}
+.edit-row select,.edit-row input,.edit-row textarea{width:100%;padding:8px;border:1px solid #bccbd7;border-radius:6px;background:#fff}
+.edit-add{display:flex;gap:8px;margin-top:10px}
+.edit-add input{flex:1}
+.edit-history{margin-top:14px}
+@media(max-width:700px){.edit-row{grid-template-columns:1fr}.edit-add{flex-direction:column}}
+
+.screen#manage{position:relative;z-index:1;min-width:0}.management-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:18px}
+.management-card{background:#fff;border:1px solid #d8e3eb;border-radius:11px;padding:18px;cursor:pointer;box-shadow:0 2px 8px rgba(35,65,90,.05)}
+.management-card:hover{border-color:#7ea8c5}
+.management-card h3{margin:0 0 6px;font-size:18px;color:#294e69}
+.management-card p{margin:0;color:#607485;font-size:13px;line-height:1.55}
+.management-list{margin-top:18px;background:#fff;border:1px solid #d8e3eb;border-radius:11px;padding:18px}
+.management-list h3{margin:0 0 12px;color:#294e69}
+.entity-picker{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.entity-picker button{padding:11px;border:1px solid #cbd8e2;background:#fff;border-radius:7px;text-align:left;cursor:pointer}
+.entity-picker button:hover{background:#f3f8fb}
+.history-mini{margin-top:12px;font-size:12px;color:#607485}
+@media(max-width:800px){.management-grid{grid-template-columns:1fr}.entity-picker{grid-template-columns:1fr}}
+</style>
+<style>
+.screen#manage{width:100%;box-sizing:border-box;overflow:visible}
+.management-grid{width:100%;box-sizing:border-box}
+.management-list{width:100%;box-sizing:border-box}
+</style>
+
+<style>
+/* v1.5: responsive management center */
+#manage .management-grid{
+  display:grid;
+  grid-template-columns:1fr;
+  gap:16px;
+  width:100%;
+  max-width:1200px;
+}
+#manage .management-card{
+  display:grid;
+  grid-template-columns:90px minmax(220px,1.2fr) minmax(190px,0.8fr) minmax(190px,0.8fr);
+  align-items:center;
+  gap:20px;
+  padding:22px;
+  background:#fff;
+  border:1px solid #dce5ee;
+  border-radius:14px;
+  box-shadow:0 2px 8px rgba(35,55,75,.08);
+}
+#manage .management-card .management-icon{
+  width:68px;height:68px;border-radius:14px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:36px;background:#f2f7fb;
+}
+#manage .management-card h3{margin:0 0 8px;font-size:22px}
+#manage .management-card p{margin:0;color:#667788;line-height:1.7;font-size:14px}
+#manage .management-action h4{margin:0 0 9px;font-size:15px}
+#manage .management-action button{
+  width:100%;min-height:46px;padding:10px 14px;
+  border-radius:9px;border:1px solid #3b78ad;background:#fff;
+  color:#24659b;font-weight:700;cursor:pointer;font-size:14px;
+}
+#manage .management-action button:hover{background:#eef6fc}
+#manage .management-info{
+  margin-top:16px;padding:18px 20px;background:#eef7ff;
+  border-radius:12px;color:#334e68;line-height:1.7;
+}
+@media(max-width:900px){
+  #manage .management-card{
+    grid-template-columns:64px 1fr;
+    gap:14px;
+  }
+  #manage .management-card .management-icon{width:56px;height:56px;font-size:30px}
+  #manage .management-card .management-description{grid-column:2}
+  #manage .management-card .management-action{grid-column:2}
+  #manage .management-card h3{font-size:20px}
+}
+@media(max-width:700px){
+  #manage{padding:14px 0 80px!important}
+  #manage h1{font-size:26px}
+  #manage .management-grid{gap:12px}
+  #manage .management-card{
+    grid-template-columns:52px 1fr;
+    padding:16px;
+    border-radius:12px;
+    gap:10px 12px;
+  }
+  #manage .management-card .management-icon{
+    width:48px;height:48px;font-size:26px;border-radius:11px;
+  }
+  #manage .management-card .management-description{grid-column:2}
+  #manage .management-card .management-action{
+    grid-column:1 / -1;
+    margin-top:2px;
+  }
+  #manage .management-card .management-action h4{font-size:14px}
+  #manage .management-action button{min-height:44px;font-size:14px}
+  #manage .management-info{font-size:13px;padding:14px;margin-top:12px}
+}
+</style>
+
+
+
+<style id="v20-responsive-fix">
+/* v2.0: responsive layout fix
+   - hospital/taxi detail and item management are inside <main>
+   - no horizontal scrolling
+   - other screens keep the original layout
+*/
+html,body{overflow-x:hidden}
+main{min-width:0}
+.screen{min-width:0;max-width:100%}
+
+/* Hospital / taxi detail */
+#hospitalDetail,#taxiDetail{width:100%;min-width:0}
+.detail-demo-card{
+  width:100%;
+  max-width:100%;
+  box-sizing:border-box;
+  padding:16px;
+  overflow:hidden;
+}
+.detail-demo-grid{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:8px;
+  width:100%;
+}
+.detail-demo-row{
+  min-width:0;
+  overflow-wrap:anywhere;
+  word-break:break-word;
+  font-size:13px;
+  line-height:1.5;
+}
+.detail-demo-row b{font-size:12px}
+#hospitalDetail h1,#taxiDetail h1{font-size:28px}
+#hospitalDetail .sub,#taxiDetail .sub{font-size:13px}
+
+/* Item management: readable without sidebar overlap or horizontal scroll */
+#manage{
+  width:100%;
+  min-width:0;
+  box-sizing:border-box;
+  overflow-x:hidden;
+}
+#manage .management-grid{
+  display:grid;
+  grid-template-columns:1fr;
+  gap:14px;
+  width:100%;
+  max-width:none;
+}
+#manage .management-card{
+  width:100%;
+  min-width:0;
+  box-sizing:border-box;
+  display:grid;
+  grid-template-columns:70px minmax(0,1.4fr) minmax(170px,.8fr) minmax(170px,.8fr);
+  align-items:center;
+  gap:16px;
+  padding:18px;
+  overflow:hidden;
+}
+#manage .management-description{min-width:0}
+#manage .management-description p{
+  overflow-wrap:anywhere;
+  word-break:break-word;
+}
+#manage .management-action{min-width:0}
+#manage .management-action button{
+  max-width:100%;
+  white-space:normal;
+  overflow-wrap:anywhere;
+}
+#manage .management-info{
+  width:100%;
+  box-sizing:border-box;
+  overflow-wrap:anywhere;
+}
+
+/* medium desktop / tablet */
+@media (max-width:1100px) and (min-width:701px){
+  #manage .management-card{
+    grid-template-columns:58px minmax(0,1fr) minmax(150px,.8fr);
+    gap:13px;
+  }
+  #manage .management-card .management-action:last-child{
+    grid-column:3;
+  }
+}
+
+/* phone / small tablet */
+@media (max-width:700px){
+  #hospitalDetail,#taxiDetail,#manage{
+    width:100%;
+    max-width:100%;
+    padding-bottom:8px;
+  }
+  #hospitalDetail h1,#taxiDetail h1,#manage h1{font-size:25px}
+  .detail-demo-card{padding:12px}
+  .detail-demo-grid{grid-template-columns:1fr}
+  .detail-demo-row{font-size:13px}
+  #manage .management-card{
+    grid-template-columns:52px minmax(0,1fr);
+    gap:10px 12px;
+    padding:14px;
+  }
+  #manage .management-card .management-description{grid-column:2}
+  #manage .management-card .management-action{
+    grid-column:1 / -1;
+    width:100%;
+  }
+  #manage .management-card .management-icon{
+    width:48px;height:48px;font-size:27px;
+  }
+  #manage .management-card h3{font-size:20px}
+  #manage .management-card p{font-size:13px;line-height:1.5}
+  #manage .management-action h4{font-size:13px}
+  #manage .management-action button{font-size:13px;min-height:42px}
+}
+
+/* very narrow phones */
+@media (max-width:380px){
+  #manage .management-card{
+    grid-template-columns:44px minmax(0,1fr);
+    padding:11px;
+  }
+  #manage .management-card .management-icon{
+    width:42px;height:42px;font-size:24px;
+  }
+}
+</style>
+
+<style id="community-resource-v21">
+.resource-search-tabs{display:flex;gap:8px;flex-wrap:wrap;margin:14px 0}.resource-search-tabs button{border:1px solid #b9c8d6;background:#fff;color:#315d82;border-radius:8px;padding:9px 14px;font-weight:700;cursor:pointer}.resource-search-tabs button.active{background:#e8f1fa;color:#145da0;border-color:#7ea8c5}.resource-card-v21{background:#fff;border:1px solid #d9e4ed;border-radius:10px;padding:16px;margin-top:12px}.resource-result-v21{display:grid;grid-template-columns:1fr 180px;gap:16px;align-items:start;background:#fff;border:1px solid #d9e4ed;border-radius:10px;padding:15px;margin-top:10px}.resource-result-v21 h3{margin:0 0 6px;color:#294e69}.resource-meta-v21{color:#607485;font-size:13px;line-height:1.7}.resource-contact-v21{font-size:14px;line-height:1.7}.resource-contact-v21 a{color:#145da0;font-weight:800;text-decoration:none}.resource-badges-v21 span{display:inline-block;background:#edf5fb;border-radius:999px;padding:4px 8px;margin:4px 4px 0 0;font-size:11px}.resource-editor-v21{margin-top:16px;padding:16px;border:1px solid #cbdce8;background:#f7fafc;border-radius:10px}.resource-editor-v21 .edit-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.resource-editor-v21 label{display:block;font-size:12px;font-weight:800;margin-bottom:4px}.resource-editor-v21 input,.resource-editor-v21 select,.resource-editor-v21 textarea{width:100%;padding:9px;border:1px solid #b9c8d6;border-radius:6px;background:#fff}.resource-editor-v21 textarea{min-height:76px}.resource-admin-grid-v21{display:grid;grid-template-columns:1fr;gap:12px;margin-top:14px}.resource-admin-card-v21{background:#fff;border:1px solid #d9e4ed;border-radius:10px;padding:15px}.resource-admin-card-v21 h3{margin:0 0 5px;color:#294e69}.resource-admin-card-v21 p{margin:0 0 10px;color:#607485;font-size:13px}.resource-admin-actions-v21{display:flex;gap:8px;flex-wrap:wrap}.resource-admin-actions-v21 button{border:1px solid #3b78ad;background:#fff;color:#24659b;border-radius:7px;padding:9px 12px;font-weight:700;cursor:pointer}.resource-admin-actions-v21 button.primary-v21{background:#1d6fa5;color:#fff}.resource-empty-v21{padding:18px;background:#f7fafc;border:1px dashed #b9c8d6;border-radius:8px;color:#607485;margin-top:10px}@media(max-width:700px){.resource-result-v21{grid-template-columns:1fr}.resource-editor-v21 .edit-grid{grid-template-columns:1fr}}
 </style></head><body>
-<header>🏥 退院支援ナビ <small>Prototype v0.3 / ダミーデータ</small></header>
-<nav><button class="active" onclick="show('home',this)">🏠 ホーム</button><button onclick="show('search',this)">🔎 施設検索</button><button onclick="show('update',this)">✏️ 空床・情報更新</button><button onclick="show('dash',this)">📊 更新状況</button></nav>
+<header>🏥 退院支援ナビ <small>Prototype v1.8 / ダミーデータ</small></header>
+<nav><button class="active" onclick="show('home',this)">🏠 ホーム</button><button onclick="show('search',this)">🔎 施設検索</button><button onclick="show('update',this)">✏️ 空床・情報更新</button><button onclick="show('dash',this)">📊 更新状況</button><button onclick="show('hospital',this)">🏥 近隣病院</button><button onclick="show('taxi',this)">🚕 介護タクシー</button><button onclick="show('manage',this)">⚙️ 項目管理</button><button onclick="show('resources',this)">🤝 地域資源</button></nav>
 <main>
 <section id="home" class="screen active"><h1>ホーム</h1><div class="sub">患者さんの条件に合う退院先候補を検索します。</div><div class="cards"><div class="card">空床あり<div class="num green">12</div><div class="sub">施設</div></div><div class="card">本日更新<div class="num blue">8</div><div class="sub">施設</div></div><div class="card">要確認<div class="num red">4</div><div class="sub">施設</div></div><div class="card">登録施設<div class="num">128</div><div class="sub">施設</div></div></div><div class="card" style="margin-top:16px"><b>まず何をしますか？</b><br><button class="primary" onclick="show('search')">施設を検索する</button><button class="secondary" onclick="show('update')" style="margin-left:8px">空床を更新する</button></div></section>
-<section id="search" class="screen"><h1>施設検索</h1><div class="sub">患者条件を入力し、候補施設を距離の近い順に表示します。</div><div class="box">
+<section id="search" class="screen"><h1>施設検索</h1><div class="sub">患者さんの条件に合う退院先候補を、距離・空床・受け入れ条件から比較できます。距離は本番版で地図サービスと連携予定です。</div><div class="box">
 <div class="sec"><div class="title">📍 患者・距離</div><div class="grid"><div class="field" style="grid-column:span 2"><label>患者住所（試作品）</label><input id="address" placeholder="例：小牧市常普請1丁目"></div><div class="field"><label>距離の基準</label><select id="base"><option>小牧市民病院から</option><option>患者自宅から（試作）</option></select></div><div class="field"><label>表示順</label><select id="sort"><option>距離が近い順</option><option>一致率順</option><option>費用が安い順</option><option>更新が新しい順</option></select></div></div></div>
 <div class="sec"><div class="title">介護・生活</div><div class="grid"><div class="field"><label>希望地域</label><select id="area"><option value="">指定なし</option><option>小牧市</option><option>春日井市</option><option>犬山市</option></select></div><div class="field"><label>介護度</label><select id="care"><option value="">指定なし</option><option>要支援1</option><option>要支援2</option><option>要介護1</option><option>要介護2</option><option>要介護3</option><option>要介護4</option><option>要介護5</option></select></div><div class="field"><label>認定状況</label><select id="cert"><option value="">指定なし</option><option>認定済み</option><option>認定待ち</option><option>申請予定</option><option>区分変更中</option></select></div><div class="field"><label>月額予算</label><select id="budget"><option value="">指定なし</option><option value="15">15万円以内</option><option value="18">18万円以内</option><option value="20">20万円以内</option><option value="25">25万円以内</option></select></div></div><div class="checks" style="margin-top:8px"><label><input type="checkbox" class="p" value="認知症"> 認知症</label><label><input type="checkbox" class="p" value="認知症重度"> 認知症重度</label><label><input type="checkbox" class="p" value="身元保証人なし"> 身元保証人なし</label><label><input type="checkbox" class="p" value="生活保護"> 生活保護</label><label><input type="checkbox" class="p" value="感染症あり"> 感染症あり</label></div></div>
-<div class="sec"><div class="title">施設種別</div><div class="checks"><label><input type="checkbox" class="t" value="ナーシング"> ナーシング</label><label><input type="checkbox" class="t" value="住宅型"> 住宅型</label><label><input type="checkbox" class="t" value="サ高住"> サ高住</label><label><input type="checkbox" class="t" value="特養"> 特養</label><label><input type="checkbox" class="t" value="老健"> 老健</label><label><input type="checkbox" class="t" value="小多機"> 小多機</label><label><input type="checkbox" class="t" value="看多機"> 看多機</label></div></div>
-<div class="sec"><div class="title">医療・看護対応</div><div class="checks"><label><input type="checkbox" class="m" value="バルン"> バルン</label><label><input type="checkbox" class="m" value="点滴"> 点滴</label><label><input type="checkbox" class="m" value="CV/PICC"> CV/PICC</label><label><input type="checkbox" class="m" value="胃ろう"> 胃ろう</label><label><input type="checkbox" class="m" value="吸引"> 吸引</label><label><input type="checkbox" class="m" value="酸素"> 酸素</label><label><input type="checkbox" class="m" value="透析"> 透析</label><label><input type="checkbox" class="m" value="看取り"> 看取り</label><label><input type="checkbox" class="m" value="24時間看護"> 24時間看護</label></div></div>
+<div class="sec"><div class="title">施設種別</div><div class="checks"><label><input type="checkbox" class="t" value="ナーシング"> ナーシング</label><label><input type="checkbox" class="t" value="介護型"> 介護型</label><label><input type="checkbox" class="t" value="住宅型"> 住宅型</label><label><input type="checkbox" class="t" value="サ高住"> サ高住</label><label><input type="checkbox" class="t" value="特養"> 特養</label><label><input type="checkbox" class="t" value="老健"> 老健</label><label><input type="checkbox" class="t" value="小多機"> 小多機</label><label><input type="checkbox" class="t" value="看多機"> 看多機</label></div></div>
+<div class="sec"><div class="title">医療・看護対応</div><div class="checks"><label><input type="checkbox" class="m" value="バルン"> バルン</label><label><input type="checkbox" class="m" value="点滴"> 点滴</label><label><input type="checkbox" class="m" value="輸血"> 輸血</label><label><input type="checkbox" class="m" value="ストマ"> ストマ</label><label><input type="checkbox" class="m" value="経管栄養"> 経管栄養</label><label><input type="checkbox" class="m" value="気切"> 気切</label><label><input type="checkbox" class="m" value="人工呼吸器"> 人工呼吸器</label><label><input type="checkbox" class="m" value="CV/PICC"> CV/PICC</label><label><input type="checkbox" class="m" value="胃ろう"> 胃ろう</label><label><input type="checkbox" class="m" value="吸引"> 吸引</label><label><input type="checkbox" class="m" value="酸素"> 酸素</label><label><input type="checkbox" class="m" value="透析"> 透析</label><label><input type="checkbox" class="m" value="看取り"> 看取り</label><label><input type="checkbox" class="m" value="24時間看護"> 24時間看護</label></div></div>
 <div class="sec"><div class="title">空床</div><select id="vac" style="padding:9px;border:1px solid #b9c8d6;border-radius:6px"><option value="">指定なし</option><option value="1">空床あり</option></select></div><button class="primary" onclick="search()">🔎 条件で検索</button></div><div id="results" class="results"></div></section>
 <section id="detail" class="screen"><h1>施設詳細</h1><div id="detailBox" class="detail"></div></section>
 <section id="update" class="screen"><h1>空床・施設情報更新</h1><div class="sub">更新者と更新日時を記録する想定の画面です。</div><div class="box"><div class="grid"><div class="field"><label>施設名</label><select><option>○○ナーシングホーム</option><option>△△住宅型ホーム</option><option>□□サ高住</option><option>××看多機</option></select></div><div class="field"><label>空床数</label><select><option>0</option><option>1</option><option>2</option><option>3以上</option></select></div><div class="field"><label>更新者</label><input placeholder="例：ひかる"></div><div class="field"><label>更新日</label><input type="date"></div></div><label style="display:block;margin-top:14px;font-size:12px;font-weight:700">更新内容・施設からの連絡</label><textarea rows="4" placeholder="受け入れ条件変更、空床状況、看護体制など"></textarea><button class="primary" onclick="alert('試作品：保存操作のイメージです。')">保存する</button></div></section>
 <section id="dash" class="screen"><h1>更新状況</h1><div class="sub">情報がいつ・誰によって確認されたかを一覧で把握します。</div><table><tr><th>施設</th><th>種別</th><th>空床</th><th>最終更新</th><th>更新者</th><th>状況</th></tr><tr><td>○○ナーシングホーム</td><td>ナーシング / 住宅型</td><td>2</td><td>2026/8/20 18:32</td><td>ひかる</td><td><span class="badge ok">今日更新</span></td></tr><tr><td>△△住宅型ホーム</td><td>住宅型</td><td>1</td><td>2026/8/18 16:10</td><td>佐藤</td><td><span class="badge warn">2日前</span></td></tr><tr><td>□□サ高住</td><td>サ高住</td><td>0</td><td>2026/7/30 14:05</td><td>田中</td><td><span class="badge bad">要確認</span></td></tr></table><div class="note">※試作品はダミーデータです。実際の施設情報・患者情報は登録していません。</div></section>
-</main><div class="mobile"><button class="active" onclick="mobileShow('home',this)">🏠<br>ホーム</button><button onclick="mobileShow('search',this)">🔎<br>施設検索</button><button onclick="mobileShow('update',this)">✏️<br>更新</button><button onclick="mobileShow('dash',this)">📊<br>更新状況</button></div>
+<section id="hospital" class="screen">
+<h1>🏥 近隣病院・地域連携</h1>
+<div class="sub">病床の種類・空床・医療対応・地域連携情報をまとめて確認する想定の画面です。</div>
+<div class="resource-card">
+<div class="grid">
+<div class="field"><label>地域</label><select><option>小牧市</option><option>春日井市</option><option>犬山市</option></select></div>
+<div class="field"><label>病床種別</label><select><option>指定なし</option><option>急性期</option><option>回復期</option><option>地域包括ケア</option><option>療養</option><option>緩和ケア</option></select></div>
+<div class="field"><label>空床</label><select><option>指定なし</option><option>空床あり</option></select></div>
+<div class="field"><label>表示順</label><select><option>距離が近い順</option><option>更新が新しい順</option></select></div>
+</div>
+<div class="checks" style="margin-top:10px">
+<label><input type="checkbox"> 気切</label><label><input type="checkbox"> 人工呼吸器</label><label><input type="checkbox"> 酸素</label><label><input type="checkbox"> 透析</label><label><input type="checkbox"> 感染症</label>
+</div>
+<button class="primary">🔎 病院を検索</button>
+</div>
+<div class="results">
+<div class="result"><div class="rank">1</div><div><div class="facility">△△地域連携病院</div><div class="tags"><span>地域包括ケア</span><span>気切</span><span>酸素</span><span>透析</span></div><div class="update">🛏 空床あり　📅 2026/8/24　👤 ひかる</div></div><div><div class="distance">📍 4.1 km</div><button class="secondary" onclick="showHospitalDetail('△△地域連携病院')">詳細</button></div></div>
+<div class="result"><div class="rank">2</div><div><div class="facility">□□回復期病院</div><div class="tags"><span>回復期</span><span>酸素</span></div><div class="update">🛏 要確認　📅 2026/8/22　👤 佐藤</div></div><div><div class="distance">📍 6.8 km</div><button class="secondary" onclick="showHospitalDetail('□□回復期病院')">詳細</button></div></div>
+</div>
+</section>
+<section id="taxi" class="screen">
+<h1>🚕 介護タクシー</h1>
+<div class="sub">連絡先・対応車両・距離・利用時間から料金目安を確認する想定の画面です。</div>
+<div class="resource-card">
+<div class="grid">
+<div class="field"><label>出発地</label><input value="小牧市民病院"></div>
+<div class="field"><label>目的地</label><input placeholder="患者宅・施設など"></div>
+<div class="field"><label>車両</label><select><option>車椅子</option><option>リクライニング車椅子</option><option>ストレッチャー</option></select></div>
+<div class="field"><label>利用時間帯</label><select><option>日中</option><option>夜間</option><option>休日</option></select></div>
+</div>
+<button class="primary">🔎 介護タクシーを検索</button>
+</div>
+<div class="results">
+<div class="result"><div class="rank">1</div><div><div class="facility">○○介護タクシー</div><div class="tags"><span>車椅子</span><span>リクライニング</span></div><div class="update">☎ 0568-XX-XXXX　🕐 8:00〜18:00</div></div><div><div class="distance">📍 3.2 km</div><div>料金目安 <strong>3,000〜5,000円</strong></div><button class="secondary" onclick="showTaxiDetail('○○介護タクシー')">詳細</button></div></div>
+</div>
+<div class="note">※料金は試作品上の目安です。実際の料金は事業者への確認が必要です。</div>
+</section>
+
+<section id="settings" class="screen">
+<h1>⚙️ 施設情報・項目管理</h1>
+<div class="sub">施設ごとの対応項目や、全施設で使う検索項目を後から追加・変更・非表示にできる想定の画面です。</div>
+
+<div class="resource-card">
+<h3 style="margin:0 0 10px;color:#294e69">① 全施設共通の項目を管理</h3>
+<div class="grid">
+<div class="field"><label>カテゴリ</label><select id="itemCategory"><option>医療対応</option><option>看護体制</option><option>施設概要</option><option>介護・生活</option></select></div>
+<div class="field"><label>新しい項目名</label><input id="newItem" placeholder="例：NPPV、腹膜透析、夜間看護"></div>
+<div class="field"><label>状態</label><select id="itemState"><option>検索・施設情報に表示</option><option>施設情報のみ表示</option><option>非表示</option></select></div>
+</div>
+<button class="primary" onclick="addGlobalItem()">＋ 項目を追加</button>
+<div id="globalItems" class="history" style="margin-top:14px"></div>
+</div>
+
+<div class="resource-card">
+<h3 style="margin:0 0 10px;color:#294e69">② 施設ごとの項目を管理</h3>
+<div class="grid">
+<div class="field"><label>施設</label><select id="settingFacility"><option>○○ナーシングホーム</option><option>△△住宅型ホーム</option><option>□□サ高住</option><option>××看多機</option></select></div>
+<div class="field"><label>項目名</label><input id="facilityItem" placeholder="例：夜間看護対応時間"></div>
+<div class="field"><label>現在の値</label><input id="facilityValue" placeholder="例：21:00まで"></div>
+</div>
+<button class="primary" onclick="addFacilityItem()">＋ この施設に項目を追加</button>
+<div class="note">※本番版では「削除」ではなく「非表示」にして変更履歴を残す設計を推奨。</div>
+</div>
+
+<div class="resource-card">
+<h3 style="margin:0 0 10px;color:#294e69">③ 距離・地図連携</h3>
+<div class="grid">
+<div class="field" style="grid-column:span 2"><label>患者住所</label><input id="mapOrigin" placeholder="患者自宅の住所（本番環境では院内管理）"></div>
+<div class="field"><label>距離計算</label><select><option>Google Maps連携予定</option><option>登録済み距離を使用</option></select></div>
+</div>
+<div class="note">📍 プロトタイプでは登録済みのデモ距離で距離順検索を行います。本番版ではGoogle Maps Platform等と連携し、住所→位置情報→ルート距離・所要時間を取得する想定です。</div>
+</div>
+</section>
+<section id="hospitalDetail" class="screen">
+  <h1>🏥 病院詳細</h1>
+  <div class="sub">近隣病院の受け入れ条件・空床・医療対応・地域連携担当者を確認するデモ画面です。</div>
+  <div id="hospitalDetailBody" class="detail-demo-card"></div>
+  <div style="margin-top:14px"><button class="secondary" onclick="show('hospital')">← 近隣病院に戻る</button></div>
+</section>
+
+<section id="taxiDetail" class="screen">
+  <h1>🚕 介護タクシー詳細</h1>
+  <div class="sub">事業者の連絡先・対応車両・利用時間・料金目安を確認するデモ画面です。</div>
+  <div id="taxiDetailBody" class="detail-demo-card"></div>
+  <div style="margin-top:14px"><button class="secondary" onclick="show('taxi')">← 介護タクシーに戻る</button></div>
+</section>
+
+<section id="manage" class="screen">
+  <h1>⚙️ 項目管理</h1>
+  <p class="sub">施設・病院・介護タクシーの情報や項目を管理します。</p>
+
+  <div class="management-grid">
+
+    <div class="management-card">
+      <div class="management-icon">🏠</div>
+      <div class="management-description">
+        <h3>施設</h3>
+        <p>施設の追加・編集、医療対応、看護師対応時間、空床、受け入れ条件などを管理します。</p>
+      </div>
+      <div class="management-action">
+        <h4>新しい施設を追加</h4>
+        <button type="button" onclick="openManageForm('facility','new')">＋ 新しい施設を追加</button>
+      </div>
+      <div class="management-action">
+        <h4>既存施設を編集</h4>
+        <button type="button" onclick="openManageForm('facility','edit')">☷ 施設一覧から選択</button>
+      </div>
+    </div>
+
+    <div class="management-card">
+      <div class="management-icon">🏥</div>
+      <div class="management-description">
+        <h3>病院</h3>
+        <p>病院の追加・編集、空床状況、医療対応、看取り、アメニティ、地域連携担当者などを管理します。</p>
+      </div>
+      <div class="management-action">
+        <h4>新しい病院を追加</h4>
+        <button type="button" onclick="openManageForm('hospital','new')">＋ 新しい病院を追加</button>
+      </div>
+      <div class="management-action">
+        <h4>既存病院を編集</h4>
+        <button type="button" onclick="openManageForm('hospital','edit')">☷ 病院一覧から選択</button>
+      </div>
+    </div>
+
+    <div class="management-card">
+      <div class="management-icon">🚕</div>
+      <div class="management-description">
+        <h3>介護タクシー</h3>
+        <p>事業者の追加・編集、連絡先、対応車両、利用時間、料金目安などを管理します。</p>
+      </div>
+      <div class="management-action">
+        <h4>新しい事業者を追加</h4>
+        <button type="button" onclick="openManageForm('taxi','new')">＋ 新しい事業者を追加</button>
+      </div>
+      <div class="management-action">
+        <h4>既存事業者を編集</h4>
+        <button type="button" onclick="openManageForm('taxi','edit')">☷ 事業者一覧から選択</button>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="management-info">
+    <strong>ⓘ 項目管理について</strong><br>
+    ・新しい施設／病院／介護タクシーの追加ができます。<br>
+    ・既存情報の編集や項目の追加・変更ができます。<br>
+    ・情報の変更は履歴として記録できる設計にします。
+  </div>
+
+  <div id="manageFormArea"></div>
+</section>
+
+<section id="resources" class="screen">
+  <h1>🤝 地域資源・在宅サービス</h1>
+  <div class="sub">地域包括支援センター、訪問看護ステーション、訪問診療などを、連絡先・対応エリア・対応内容から検索できます。</div>
+  <div class="resource-card-v21">
+    <div class="resource-search-tabs" id="resourceTabs">
+      <button class="active" onclick="setResourceType('all',this)">すべて</button>
+      <button onclick="setResourceType('center',this)">地域包括支援センター</button>
+      <button onclick="setResourceType('nursing',this)">訪問看護</button>
+      <button onclick="setResourceType('doctor',this)">訪問診療</button>
+    </div>
+    <div class="grid">
+      <div class="field"><label>地域</label><select id="resourceArea"><option value="">指定なし</option><option>小牧市</option><option>春日井市</option><option>犬山市</option><option>大口町</option><option>扶桑町</option></select></div>
+      <div class="field"><label>対応エリア</label><input id="resourceCoverage" placeholder="例：小牧市、春日井市西部"></div>
+      <div class="field"><label>キーワード</label><input id="resourceKeyword" placeholder="例：24時間、精神、認知症、看取り"></div>
+      <div class="field"><label>表示順</label><select id="resourceSort"><option value="name">名称順</option><option value="area">地域順</option><option value="updated">更新が新しい順</option></select></div>
+    </div>
+    <button class="primary" onclick="searchResources()">🔎 地域資源を検索</button>
+  </div>
+  <div id="resourceResults" class="results"></div>
+  <div class="resource-card-v21" style="margin-top:18px">
+    <h2 style="margin:0;color:#294e69;font-size:20px">⚙️ 地域資源の登録・編集</h2>
+    <p class="sub">登録後も、電話番号・住所・対応エリア・対応内容・担当者などをいつでも変更できます。</p>
+    <div class="resource-admin-actions-v21"><button class="primary-v21" onclick="openResourceEditor('new')">＋ 新しい地域資源を追加</button><button onclick="renderResourceAdmin()">☷ 登録一覧を表示</button></div>
+    <div id="resourceAdmin" class="resource-admin-grid-v21"></div>
+  </div>
+</section>
+</main>
+
+<div class="mobile"><button class="active" onclick="mobileShow('home',this)">🏠<br>ホーム</button><button onclick="mobileShow('search',this)">🔎<br>施設検索</button><button onclick="mobileShow('update',this)">✏️<br>更新</button><button onclick="mobileShow('dash',this)">📊<br>更新状況</button><button onclick="mobileShow('hospital',this)">🏥<br>病院</button><button onclick="mobileShow('taxi',this)">🚕<br>タクシー</button><button onclick="mobileShow('manage',this)">⚙️<br>管理</button><button onclick="mobileShow('resources',this)">🤝<br>地域資源</button></div>
+
+<script>
+const taxiMaster=[
+ {name:'○○介護タクシー',phone:'0568-XX-XXXX',hours:'8:00〜18:00',vehicles:['車椅子','リクライニング車椅子'],distance:'3.2 km',price:'3,000〜5,000円',area:'小牧市',note:'予約は電話で事前確認。夜間・休日は要相談。'},
+ {name:'△△ケアタクシー',phone:'0568-YY-YYYY',hours:'7:30〜19:00',vehicles:['車椅子','ストレッチャー'],distance:'5.6 km',price:'4,000〜7,000円',area:'春日井市',note:'ストレッチャー対応は予約時に確認。'}
+];
+
+function showHospitalDetail(name){
+ const x=hospitalMaster.find(q=>q.name===name)||hospitalMaster[0];
+ document.getElementById('hospitalDetailBody').innerHTML=`
+   <h2 style="margin-top:0">${x.name}</h2>
+   <div class="tags"><span>${x.beds}</span><span>${x.vac}</span>${x.medical.map(m=>`<span>${m}</span>`).join('')}</div>
+   <div class="detail-demo-grid" style="margin-top:14px">
+    <div class="detail-demo-row"><b>所在地</b>${x.area}</div>
+    <div class="detail-demo-row"><b>空床状況</b>${x.vac}</div>
+    <div class="detail-demo-row"><b>病床種別</b>${x.beds}</div>
+    <div class="detail-demo-row"><b>医療対応</b>${x.medical.join('・')}</div>
+    <div class="detail-demo-row"><b>看取り</b>${x.end}</div>
+    <div class="detail-demo-row"><b>アメニティ</b>${x.amenity}／${x.amenityNote}</div>
+    <div class="detail-demo-row"><b>地域連携担当</b>${x.person}（${x.personRole}）</div>
+    <div class="detail-demo-row"><b>最終更新</b>${x.updated}／${x.updater}</div>
+   </div>
+   <h3>コメント</h3><p>${x.comment}</p>
+   <div style="margin-top:14px"><button class="primary" onclick="show('hospital')">← 病院検索へ戻る</button></div>`;
+ show('hospitalDetail');
+}
+
+function showTaxiDetail(name){
+ const x=taxiMaster.find(q=>q.name===name)||taxiMaster[0];
+ document.getElementById('taxiDetailBody').innerHTML=`
+   <h2 style="margin-top:0">${x.name}</h2>
+   <div class="tags">${x.vehicles.map(v=>`<span>${v}</span>`).join('')}</div>
+   <div class="detail-demo-grid" style="margin-top:14px">
+    <div class="detail-demo-row"><b>電話番号</b><strong>${x.phone}</strong></div>
+    <div class="detail-demo-row"><b>利用時間</b>${x.hours}</div>
+    <div class="detail-demo-row"><b>対応車両</b>${x.vehicles.join('・')}</div>
+    <div class="detail-demo-row"><b>小牧市民病院から</b>${x.distance}</div>
+    <div class="detail-demo-row"><b>料金目安</b>${x.price}</div>
+    <div class="detail-demo-row"><b>対応地域</b>${x.area}</div>
+   </div>
+   <h3>備考</h3><p>${x.note}</p>
+   <div style="margin-top:14px"><button class="primary" onclick="show('taxi')">← 介護タクシー検索へ戻る</button></div>`;
+ show('taxiDetail');
+}
+</script>
+
 <script>
 const f=[
-{name:'○○ナーシングホーム',area:'小牧市',care:['要介護1','要介護2','要介護3','要介護4','要介護5'],cert:['認定済み','認定待ち'],budget:18,vac:2,d:3.2,hd:2.1,types:['ナーシング','住宅型'],p:['認知症','認知症重度','身元保証人なし','生活保護','感染症あり'],m:['バルン','点滴','CV/PICC','胃ろう','吸引','酸素','看取り','24時間看護'],person:'山田さん',updated:'2026/8/20 18:32',updater:'ひかる',note:'認定待ちの暫定受け入れは要相談。'},
-{name:'△△住宅型ホーム',area:'春日井市',care:['要支援2','要介護1','要介護2','要介護3','要介護4'],cert:['認定済み'],budget:15,vac:1,d:6.4,hd:5.8,types:['住宅型'],p:['認知症','生活保護'],m:['バルン','胃ろう','酸素','看取り'],person:'佐藤さん',updated:'2026/8/18 16:10',updater:'佐藤',note:'家族対応が丁寧。'},
-{name:'□□サ高住',area:'犬山市',care:['要介護2','要介護3','要介護4','要介護5'],cert:['認定済み','認定待ち'],budget:20,vac:0,d:8.1,hd:9.2,types:['サ高住'],p:['認知症'],m:['点滴','吸引','酸素','24時間看護'],person:'田中さん',updated:'2026/7/30 14:05',updater:'田中',note:'医療対応は事前相談。'},
-{name:'××看多機',area:'小牧市',care:['要支援2','要介護1','要介護2','要介護3','要介護4','要介護5'],cert:['認定済み','認定待ち'],budget:12,vac:3,d:4.7,hd:3.9,types:['看多機'],p:['認知症','身元保証人なし'],m:['バルン','点滴','胃ろう','吸引','酸素'],person:'鈴木さん',updated:'2026/8/19 11:20',updater:'鈴木',note:'認定待ちの暫定利用は要相談。'}];
+{name:'○○ナーシングホーム',area:'小牧市',care:['要介護1','要介護2','要介護3','要介護4','要介護5'],cert:['認定済み','認定待ち'],budget:18,vac:2,d:3.2,hd:2.1,types:['ナーシング','住宅型','介護型'],p:['認知症','認知症重度','身元保証人なし','生活保護','感染症あり'],m:['バルン','点滴','輸血','ストマ','経管栄養','気切','人工呼吸器','CV/PICC','胃ろう','吸引','酸素','看取り','24時間看護'],person:'山田さん',nurseTime:'24時間（デモ）',updated:'2026/8/20 18:32',updater:'ひかる',note:'認定待ちの暫定受け入れは要相談。'},
+{name:'△△住宅型ホーム',area:'春日井市',care:['要支援2','要介護1','要介護2','要介護3','要介護4'],cert:['認定済み'],budget:15,vac:1,d:6.4,hd:5.8,types:['住宅型'],p:['認知症','生活保護'],m:['バルン','胃ろう','酸素','看取り'],person:'佐藤さん',nurseTime:'24時間（デモ）',updated:'2026/8/18 16:10',updater:'佐藤',note:'家族対応が丁寧。'},
+{name:'□□サ高住',area:'犬山市',care:['要介護2','要介護3','要介護4','要介護5'],cert:['認定済み','認定待ち'],budget:20,vac:0,d:8.1,hd:9.2,types:['サ高住'],p:['認知症'],m:['点滴','吸引','酸素','24時間看護'],person:'田中さん',nurseTime:'24時間（デモ）',updated:'2026/7/30 14:05',updater:'田中',note:'医療対応は事前相談。'},
+{name:'××看多機',area:'小牧市',care:['要支援2','要介護1','要介護2','要介護3','要介護4','要介護5'],cert:['認定済み','認定待ち'],budget:12,vac:3,d:4.7,hd:3.9,types:['看多機'],p:['認知症','身元保証人なし'],m:['バルン','点滴','胃ろう','吸引','酸素'],person:'鈴木さん',nurseTime:'24時間（デモ）',updated:'2026/8/19 11:20',updater:'鈴木',note:'認定待ちの暫定利用は要相談。'}];
 function show(id,b){document.querySelectorAll('.screen').forEach(x=>x.classList.remove('active'));document.getElementById(id).classList.add('active');document.querySelectorAll('nav button').forEach(x=>x.classList.remove('active'));if(b)b.classList.add('active');scrollTo(0,0)}
 function mobileShow(id,b){show(id);document.querySelectorAll('.mobile button').forEach(x=>x.classList.remove('active'));b.classList.add('active')}
-function search(){let a=area.value,c=care.value,ce=cert.value,bu=budget.value,v=vac.value,p=[...document.querySelectorAll('.p:checked')].map(x=>x.value),t=[...document.querySelectorAll('.t:checked')].map(x=>x.value),m=[...document.querySelectorAll('.m:checked')].map(x=>x.value),base=document.getElementById('base').value,sort=document.getElementById('sort').value,r=f.filter(x=>(!a||x.area==a)&&(!c||x.care.includes(c))&&(!ce||x.cert.includes(ce))&&(!bu||x.budget<=+bu)&&(!v||x.vac>0)&&p.every(q=>x.p.includes(q))&&(!t.length||t.some(q=>x.types.includes(q)))&&m.every(q=>x.m.includes(q)));r.sort((x,y)=>sort=='費用が安い順'?x.budget-y.budget:sort=='一致率順'?y.p.length-x.p.length:sort=='更新が新しい順'?y.updated.localeCompare(x.updated):(base.includes('患者')?x.hd-x.hd:y.d-x.d));results.innerHTML=r.length?r.map((x,i)=>{let d=base.includes('患者')?x.hd:x.d;return `<div class="result"><div class="rank">${i+1}</div><div><div class="facility">${x.name}</div><div class="tags">${[...x.types,...x.m].map(q=>`<span>${q}</span>`).join('')}</div><div class="update">🛏 空床 ${x.vac}　📅 ${x.updated}　👤 ${x.updater}</div></div><div><div class="distance">📍 ${d} km</div><div>一致率 <strong>${98-i*4}%</strong></div><button class="secondary" onclick="detail('${x.name}')">詳細</button></div></div>`}).join(''):'<div class="card">条件に合う施設はありません。</div>'}
-function detail(n){let x=f.find(q=>q.name==n);detailBox.innerHTML=`<h2>${x.name}</h2><div class="sub">${x.area} / ${x.types.join('・')}</div><div class="detailgrid"><div class="detailrow"><b>相談員</b>${x.person}</div><div class="detailrow"><b>空床</b>${x.vac}</div><div class="detailrow"><b>月額目安</b>${x.budget}万円以内</div><div class="detailrow"><b>介護度</b>${x.care.join(' / ')}</div><div class="detailrow"><b>認定待ち</b>${x.cert.includes('認定待ち')?'暫定受け入れ要相談':'対応情報なし'}</div><div class="detailrow"><b>最終更新</b>${x.updated}</div><div class="detailrow"><b>更新者</b>${x.updater}</div><div class="detailrow"><b>小牧市民病院から</b>${x.d} km</div></div><h3>生活・受入条件</h3><div class="tags">${x.p.map(q=>`<span>${q}</span>`).join('')}</div><h3>医療・看護対応</h3><div class="tags">${x.m.map(q=>`<span>${q}</span>`).join('')}</div><h3>メモ</h3><p>${x.note}</p><div class="note">📅 ${x.updated}　👤 更新者：${x.updater}<br>※試作品の更新情報です。</div><button class="secondary" onclick="show('search')">検索へ戻る</button>`;show('detail')}
+function search(){let a=area.value,c=care.value,ce=cert.value,bu=budget.value,v=vac.value,p=[...document.querySelectorAll('.p:checked')].map(x=>x.value),t=[...document.querySelectorAll('.t:checked')].map(x=>x.value),m=[...document.querySelectorAll('.m:checked')].map(x=>x.value),base=document.getElementById('base').value,sort=document.getElementById('sort').value,r=f.filter(x=>(!a||x.area==a)&&(!c||x.care.includes(c))&&(!ce||x.cert.includes(ce))&&(!bu||x.budget<=+bu)&&(!v||x.vac>0)&&p.every(q=>x.p.includes(q))&&(!t.length||t.some(q=>x.types.includes(q)))&&m.every(q=>x.m.includes(q)));r.sort((x,y)=>sort=='費用が安い順'?x.budget-y.budget:sort=='一致率順'?y.p.length-x.p.length:sort=='更新が新しい順'?y.updated.localeCompare(x.updated):(base.includes('患者')?x.hd-y.hd:x.d-y.d));results.innerHTML=r.length?r.map((x,i)=>{let d=base.includes('患者')?x.hd:x.d;return `<div class="result"><div class="rank">${i+1}</div><div><div class="facility">${x.name}</div><div class="tags">${[...x.types,...x.m].map(q=>`<span>${q}</span>`).join('')}</div><div class="update">🛏 空床 ${x.vac}　📅 ${x.updated}　👤 ${x.updater}</div></div><div><div class="distance">📍 ${d} km</div><div>🚗 約${Math.max(5,Math.round(d*2.2))}分（デモ）</div><div>一致率 <strong>${98-i*4}%</strong></div><button class="secondary" onclick="detail('${x.name}')">詳細</button> <button class="secondary" onclick="detail(\'${x.name}\');setTimeout(()=>openDirectEdit(\'facility\',\'${x.name}\'),50)">✏️ 修正</button><a class="route-btn" target="_blank" href="${mapsUrl(document.getElementById('address').value,x.name)}">🗺 ルート</a></div></div>`}).join(''):'<div class="card">条件に合う施設はありません。</div>'}
+function detail(n){
+ let x=f.find(q=>q.name==n);
+ detailBox.innerHTML=`<h2>${x.name}</h2><div class="sub">${x.area} / ${x.types.join('・')}</div>
+ <div class="detailgrid">
+ <div class="detailrow"><b>相談員</b>${x.person}</div><div class="detailrow"><b>看護師対応時間</b><span id="nurseTimeView">${x.nurseTime||"24時間（デモ）"}</span></div>
+ <div class="detailrow"><b>空床</b><span id="vacancyView">${x.vac}</span>床</div>
+ <div class="detailrow"><b>月額目安</b>${x.budget}万円以内</div>
+ <div class="detailrow"><b>介護度</b>${x.care.join(' / ')}</div>
+ <div class="detailrow"><b>認定待ち</b>${x.cert.includes('認定待ち')?'暫定受け入れ要相談':'対応情報なし'}</div>
+ <div class="detailrow"><b>最終更新</b><span id="updatedView">${x.updated}</span></div>
+ <div class="detailrow"><b>更新者</b><span id="updaterView">${x.updater}</span></div>
+ <div class="detailrow"><b>小牧市民病院から</b>${x.d} km</div></div>
+ <h3>生活・受入条件</h3><div class="tags">${x.p.map(q=>`<span>${q}</span>`).join('')}</div>
+ <h3>医療・看護対応</h3><div class="tags">${x.m.map(q=>`<span>${q}</span>`).join('')}</div>
+ <h3>メモ</h3><p>${x.note}</p>
+ <div class="note">📅 <span id="noteDate">${x.updated}</span>　👤 更新者：<span id="noteUpdater">${x.updater}</span><br>※試作品の更新情報です。</div><div class="history"><h3>🔄 変更履歴（試作品）</h3><div class="history-item">2026/8/24　ひかる：空床状況を確認・更新</div><div class="history-item">2026/8/20　ひかる：医療対応・看取り条件を確認</div><div class="history-item">2026/8/1　佐藤：看護体制を更新</div></div>
+ <div style="margin-top:14px"><button class="primary" onclick="openDirectEdit('facility','${x.name}')">✏️ 情報を修正</button><button class="secondary" onclick="show('search')">検索へ戻る</button></div>
+ <div id="inlineUpdate"></div>`;
+ show('detail')
+}
+
+function openDirectEdit(kind,n){
+ const x=(typeof f!=='undefined' ? f.find(q=>q.name==n) : null);
+ const data=x||{name:n,updater:'未入力',updated:'未入力',vac:0,m:[],note:''};
+ const target=document.getElementById('inlineUpdate')||document.getElementById('directEdit');
+ if(!target) return;
+ const meds=['バルン','点滴','輸血','ストマ','経管栄養','気切','人工呼吸器','CV/PICC','胃ろう','吸引','酸素','透析','看取り','24時間看護'];
+ target.innerHTML=`<div class="direct-edit">
+ <h3>✏️ ${data.name} の情報を修正</h3>
+ <div class="edit-section"><strong>空床・基本情報</strong>
+ <div class="edit-row"><div class="label">空床数</div><select id="directVac"><option>0</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option></select><input id="directUpdater" placeholder="更新者"></div>
+ </div>
+ <div class="edit-section"><strong>看護師体制</strong>
+ <div class="edit-row"><div class="label">看護師対応時間</div><input id="nurseTime" placeholder="例：24時間／8:30〜17:30"><input id="editReason" placeholder="変更内容・理由"></div>
+ </div>
+ <div class="edit-section"><strong>医療対応</strong>
+ ${meds.map((m,i)=>`<div class="edit-row"><div class="label">${m}</div><select id="med_${i}"><option>未設定</option><option>可</option><option>条件付き</option><option>不可</option></select><input id="mednote_${i}" placeholder="条件・備考"></div>`).join('')}
+ <div class="edit-add"><input id="newItem" placeholder="新しい対応項目を追加"><button class="secondary" onclick="addDirectItem()">＋項目追加</button></div>
+ </div>
+ <div class="edit-section"><strong>施設概要・変更メモ</strong>
+ <textarea id="directNote" rows="3" placeholder="施設概要の変更、受け入れ条件変更など"></textarea>
+ </div>
+ <button class="primary" onclick="saveDirectEdit('${n}')">保存する</button>
+ <button class="secondary" onclick="document.getElementById('inlineUpdate').innerHTML=''">キャンセル</button>
+ <div class="edit-history"><div class="note">保存すると「更新者・更新日時・変更内容」を履歴として残す想定です。</div></div>
+ </div>`;
+ const v=document.getElementById('directVac'); if(v) v.value=String(data.vac||0);
+ const u=document.getElementById('directUpdater'); if(u) u.value=data.updater||'';
+}
+function addDirectItem(){
+ const input=document.getElementById('newItem');
+ if(!input || !input.value.trim()) return;
+ alert('試作品：追加項目「'+input.value.trim()+'」を登録する想定です。');
+ input.value='';
+}
+function saveDirectEdit(n){
+ const x=(typeof f!=='undefined' ? f.find(q=>q.name==n) : null);
+ if(x){
+   x.vac=+(document.getElementById('directVac')?.value||x.vac||0);
+   x.updater=document.getElementById('directUpdater')?.value||'未入力';
+   const reason=document.getElementById('editReason')?.value||'';
+   const note=document.getElementById('directNote')?.value||'';
+   x.note=note||reason||x.note;
+   const now=new Date();
+   x.updated=now.toLocaleString('ja-JP',{hour12:false});
+   if(document.getElementById('vacancyView')) document.getElementById('vacancyView').textContent=x.vac;
+   if(document.getElementById('updatedView')) document.getElementById('updatedView').textContent=x.updated;
+   if(document.getElementById('updaterView')) document.getElementById('updaterView').textContent=x.updater;
+ }
+ const target=document.getElementById('inlineUpdate');
+ if(target) target.innerHTML='<div class="note">✅ 修正内容を保存しました（試作品）。更新者・更新日時・変更内容を記録する想定です。</div>';
+}
+function openInlineUpdate(n){
+ let x=f.find(q=>q.name==n);
+ const now=new Date();
+ const local=new Date(now.getTime()-now.getTimezoneOffset()*60000).toISOString().slice(0,16).replace('T',' ');
+ document.getElementById('inlineUpdate').innerHTML=`<div class="update-panel">
+ <h3>✏️ ${x.name} の情報を更新</h3>
+ <div class="update-grid">
+ <div><label>空床数</label><select id="editVac"><option ${x.vac==0?'selected':''}>0</option><option ${x.vac==1?'selected':''}>1</option><option ${x.vac==2?'selected':''}>2</option><option>3</option><option>4</option><option>5</option></select></div>
+ <div><label>更新者</label><input id="editUpdater" value="${x.updater}"></div>
+ <div><label>更新日時</label><input id="editUpdated" value="${local}"></div><div><label>看護師対応時間</label><input id="editNurseTime" value="${x.nurseTime||"24時間（デモ）"}"></div>
+ </div>
+ <div style="margin-top:10px"><label>施設からの連絡・変更内容</label><textarea id="editNote" rows="3" placeholder="例：空床1床、看取り可、バルン可、認定待ち暫定受け入れ可"></textarea></div>
+ <button class="save-update" onclick="saveInlineUpdate('${x.name}')">保存する</button>
+ <button class="cancel-update" onclick="document.getElementById('inlineUpdate').innerHTML=''">キャンセル</button>
+ </div>`;
+ document.getElementById('inlineUpdate').scrollIntoView({behavior:'smooth',block:'center'});
+}
+function saveInlineUpdate(n){
+ let x=f.find(q=>q.name==n);
+ x.vac=+document.getElementById('editVac').value;
+ x.updater=document.getElementById('editUpdater').value||'未入力';
+ x.updated=document.getElementById('editUpdated').value||'未入力';
+ x.nurseTime=document.getElementById('editNurseTime').value||'未入力'; const nt=document.getElementById('nurseTimeView'); if(nt)nt.textContent=x.nurseTime; const note=document.getElementById('editNote').value.trim();
+ if(note) x.note=note;
+ document.getElementById('vacancyView').textContent=x.vac;
+ document.getElementById('updatedView').textContent=x.updated;
+ document.getElementById('updaterView').textContent=x.updater;
+ document.getElementById('noteDate').textContent=x.updated;
+ document.getElementById('noteUpdater').textContent=x.updater;
+ document.getElementById('inlineUpdate').innerHTML=`<div class="note">✅ 更新しました。<br>空床：${x.vac}床　／　更新者：${x.updater}　／　更新日時：${x.updated}</div>`;
+}
+
+
+const globalItems=[
+ {cat:'医療対応',name:'バルン',state:'検索・施設情報に表示'},
+ {cat:'医療対応',name:'点滴',state:'検索・施設情報に表示'},
+ {cat:'医療対応',name:'輸血',state:'検索・施設情報に表示'},
+ {cat:'医療対応',name:'気切',state:'検索・施設情報に表示'},
+ {cat:'看護体制',name:'24時間看護',state:'検索・施設情報に表示'},
+ {cat:'看護体制',name:'夜間看護対応時間',state:'施設情報のみ表示'}
+];
+function renderGlobalItems(){
+ const el=document.getElementById('globalItems'); if(!el)return;
+ el.innerHTML='<div class="settings-list">'+globalItems.map((it,i)=>`<span class="settings-chip">${it.cat}：${it.name} <small>${it.state}</small><button onclick="hideGlobalItem(${i})" title="非表示">×</button></span>`).join('')+'</div>';
+}
+function addGlobalItem(){
+ const cat=document.getElementById('itemCategory').value, name=document.getElementById('newItem').value.trim(), state=document.getElementById('itemState').value;
+ if(!name){alert('項目名を入力してください');return}
+ globalItems.push({cat,name,state}); document.getElementById('newItem').value=''; renderGlobalItems();
+}
+function hideGlobalItem(i){
+ globalItems[i].state='非表示'; renderGlobalItems();
+}
+function addFacilityItem(){
+ const facility=document.getElementById('settingFacility').value, name=document.getElementById('facilityItem').value.trim(), val=document.getElementById('facilityValue').value.trim();
+ if(!name){alert('項目名を入力してください');return}
+ alert(`試作品：${facility} に「${name}：${val||'未入力'}」を追加しました。\\n本番版では施設情報と変更履歴に保存します。`);
+ document.getElementById('facilityItem').value=''; document.getElementById('facilityValue').value='';
+}
+function mapsUrl(origin,destination){
+ return 'https://www.google.com/maps/dir/?api=1&origin='+encodeURIComponent(origin||'小牧市民病院')+'&destination='+encodeURIComponent(destination);
+}
+renderGlobalItems();
+
 search();
+
+
+const hospitalMaster=[
+ {name:'△△地域連携病院',area:'小牧市',beds:'地域包括ケア',vac:'空床あり',medical:['酸素','気切','透析'],end:'可',amenity:'あり',amenityNote:'病衣・オムツ等は要確認',person:'山田さん',personRole:'地域連携室',updated:'2026/8/24',updater:'ひかる',comment:'転院相談は地域連携室へ'},
+ {name:'□□回復期病院',area:'春日井市',beds:'回復期',vac:'要確認',medical:['酸素'],end:'要相談',amenity:'あり',amenityNote:'入院時に説明',person:'佐藤さん',personRole:'医療ソーシャルワーカー',updated:'2026/8/22',updater:'佐藤',comment:'回復期リハ対象の確認が必要'}
+];
+
+function openManagement(kind){
+ const body=document.getElementById('managementBody');
+ const titles={facility:'🏠 施設',hospital:'🏥 病院',taxi:'🚕 介護タクシー'};
+ body.innerHTML=`
+ <h3>${titles[kind]}の管理</h3>
+ <div class="entity-picker">
+   <button onclick="addEntity('${kind}')">＋ 新しい${kind==='facility'?'施設':kind==='hospital'?'病院':'介護タクシー'}を追加</button>
+   <button onclick="chooseEntity('${kind}')">✏️ 既存情報を修正</button>
+ </div>
+ <div id="entityEditor" style="margin-top:14px"></div>`;
+}
+
+function chooseEntity(kind){
+ const body=document.getElementById('entityEditor');
+ let arr=kind==='hospital'?hospitalMaster:(typeof f!=='undefined'?f:[]);
+ if(kind==='taxi') arr=[{name:'○○介護タクシー'},{name:'△△ケアタクシー'}];
+ arr=[...arr].sort((a,b)=>String(a.name).localeCompare(String(b.name),'ja'));
+ body.innerHTML=`<div class="sub" style="margin-bottom:8px">あいうえお順で選択</div>`+
+ arr.map(x=>`<button class="secondary" style="display:block;width:100%;text-align:left;margin:5px 0" onclick="editEntity('${kind}','${String(x.name).replace(/'/g,"\\'")}')">${x.name}</button>`).join('');
+}
+
+function addEntity(kind){
+ const body=document.getElementById('entityEditor');
+ const label=kind==='facility'?'施設':kind==='hospital'?'病院':'介護タクシー';
+ body.innerHTML=`
+ <div class="direct-edit">
+ <h3>＋ 新しい${label}を追加</h3>
+ <div class="grid">
+  <div class="field"><label>${label}名</label><input id="newName" placeholder="名称を入力"></div>
+  <div class="field"><label>住所</label><input id="newAddress" placeholder="住所を入力"></div>
+  <div class="field"><label>電話番号</label><input id="newPhone" placeholder="電話番号"></div>
+ </div>
+ <textarea id="newComment" rows="3" style="width:100%;margin-top:10px;padding:9px;border:1px solid #bccbd7;border-radius:6px" placeholder="概要・コメント"></textarea>
+ <button class="primary" style="margin-top:10px" onclick="saveNewEntity('${kind}')">追加する</button>
+ </div>`;
+}
+
+function editEntity(kind,name){
+ const body=document.getElementById('entityEditor');
+ if(kind==='hospital'){
+  const x=hospitalMaster.find(q=>q.name===name);
+  body.innerHTML=`
+  <div class="direct-edit">
+   <h3>🏥 ${x.name} の情報を修正</h3>
+   <div class="edit-section"><strong>病院概要・病床</strong>
+    <div class="edit-row"><div class="label">病床種別</div><input id="hBeds" value="${x.beds}"><input id="hVac" value="${x.vac}"></div>
+   </div>
+   <div class="edit-section"><strong>医療対応</strong>
+    <div class="edit-row"><div class="label">対応項目</div><input id="hMedical" value="${x.medical.join('、')}"><input placeholder="コメント" id="hMedicalNote"></div>
+   </div>
+   <div class="edit-section"><strong>看取り・アメニティ</strong>
+    <div class="edit-row"><div class="label">看取り</div><select id="hEnd"><option>可</option><option>要相談</option><option>不可</option></select><input id="hAmenity" value="${x.amenity}" placeholder="アメニティ有無"></div>
+    <div class="edit-row"><div class="label">アメニティコメント</div><input id="hAmenityNote" value="${x.amenityNote}"><input id="hComment" value="${x.comment}"></div>
+   </div>
+   <div class="edit-section"><strong>地域連携担当者</strong>
+    <div class="edit-row"><div class="label">担当者名</div><input id="hPerson" value="${x.person}"><input id="hRole" value="${x.personRole}"></div>
+    <div class="note">担当者の異動・退職・着任時にここを更新できます。変更履歴を残す想定です。</div>
+   </div>
+   <button class="primary" onclick="saveHospital('${name.replace(/'/g,"\\'")}')">保存する</button>
+  </div>`;
+  document.getElementById('hEnd').value=x.end;
+ } else {
+  body.innerHTML=`<div class="direct-edit"><h3>${kind==='facility'?'🏠':'🚕'} ${name} の情報を修正</h3>
+  <p class="sub">既存の情報修正画面から、対応状況・体制・連絡先などを変更できます。</p>
+  <button class="primary" onclick="alert('この対象の詳細編集画面へ接続する想定です。')">詳細編集を開く</button></div>`;
+ }
+}
+
+function saveHospital(name){
+ const x=hospitalMaster.find(q=>q.name===name);
+ x.beds=document.getElementById('hBeds').value;
+ x.vac=document.getElementById('hVac').value;
+ x.medical=document.getElementById('hMedical').value.split('、').filter(Boolean);
+ x.end=document.getElementById('hEnd').value;
+ x.amenity=document.getElementById('hAmenity').value;
+ x.amenityNote=document.getElementById('hAmenityNote').value;
+ x.comment=document.getElementById('hComment').value;
+ x.person=document.getElementById('hPerson').value;
+ x.personRole=document.getElementById('hRole').value;
+ x.updated=new Date().toLocaleString('ja-JP',{hour12:false});
+ x.updater='現在の入力者';
+ document.getElementById('entityEditor').innerHTML='<div class="note">✅ 病院情報を更新しました（試作品）。担当者変更も履歴管理する想定です。</div>';
+}
+
+function saveNewEntity(kind){
+ const name=document.getElementById('newName').value.trim();
+ if(!name){alert('名称を入力してください');return;}
+ document.getElementById('entityEditor').innerHTML=`<div class="note">✅ 「${name}」を追加しました（試作品）。本番ではデータベースへ登録する想定です。</div>`;
+}
+</script>
+
+<script>
+function openManageForm(type, mode){
+  const area = document.getElementById('manageFormArea');
+  if(!area) return;
+  const labels = {facility:'施設', hospital:'病院', taxi:'介護タクシー'};
+  const label = labels[type] || '情報';
+  const action = mode === 'new' ? '新規追加' : '既存情報を編集';
+  area.innerHTML = `
+    <div class="card" style="margin-top:16px;">
+      <h2>${label}：${action}</h2>
+      <p class="sub">ここに${label}の入力・編集フォームを配置します。</p>
+      <button type="button" class="secondary" onclick="document.getElementById('manageFormArea').innerHTML=''">閉じる</button>
+    </div>`;
+  area.scrollIntoView({behavior:'smooth', block:'start'});
+}
+</script>
+
+<script id="community-resource-v21-js">
+const communityResources=[
+ {id:'c1',type:'center',typeLabel:'地域包括支援センター',name:'○○地域包括支援センター',area:'小牧市',address:'小牧市○○町1-1',phone:'0568-XX-1111',coverage:'小牧市○○・△△地区',hours:'平日 8:30〜17:15',services:['総合相談','介護予防','権利擁護','認知症相談'],person:'地域包括支援センター担当',updated:'2026/8/24',note:'介護保険申請・サービス調整の相談窓口。'},
+ {id:'n1',type:'nursing',typeLabel:'訪問看護',name:'○○訪問看護ステーション',area:'小牧市',address:'小牧市○○町2-2',phone:'0568-XX-2222',coverage:'小牧市全域・春日井市一部',hours:'平日 9:00〜17:00／緊急時24時間',services:['24時間対応','緊急訪問','看取り','医療処置'],person:'管理者 ○○さん',updated:'2026/8/23',note:'人工呼吸器・中心静脈栄養などは事前相談。'},
+ {id:'d1',type:'doctor',typeLabel:'訪問診療',name:'○○在宅クリニック',area:'春日井市',address:'春日井市○○町3-3',phone:'0568-XX-3333',coverage:'春日井市・小牧市一部',hours:'平日 9:00〜18:00／オンコールあり',services:['訪問診療','往診','看取り','在宅酸素'],person:'地域連携担当 ○○さん',updated:'2026/8/22',note:'新規依頼は地域連携担当へ。'}
+];
+let resourceType='all';
+function setResourceType(type,btn){resourceType=type;document.querySelectorAll('#resourceTabs button').forEach(b=>b.classList.remove('active'));if(btn)btn.classList.add('active');searchResources();}
+function resourceMatches(x){const a=document.getElementById('resourceArea')?.value||'',c=(document.getElementById('resourceCoverage')?.value||'').trim(),k=(document.getElementById('resourceKeyword')?.value||'').trim().toLowerCase();return (!a||x.area===a||x.coverage.includes(a))&&(!c||x.coverage.includes(c))&&(!k||[x.name,x.area,x.address,x.coverage,x.hours,x.person,x.note,...x.services].join(' ').toLowerCase().includes(k));}
+function searchResources(){let r=communityResources.filter(x=>(resourceType==='all'||x.type===resourceType)&&resourceMatches(x));const sort=document.getElementById('resourceSort')?.value||'name';r.sort((a,b)=>sort==='updated'?b.updated.localeCompare(a.updated):sort==='area'?a.area.localeCompare(b.area,'ja'):a.name.localeCompare(b.name,'ja'));const el=document.getElementById('resourceResults');if(!el)return;el.innerHTML=r.length?r.map(x=>`<div class="resource-result-v21"><div><h3>${x.name}</h3><div class="resource-badges-v21">${x.services.map(v=>`<span>${v}</span>`).join('')}</div><div class="resource-meta-v21">📍 ${x.area}／${x.address}<br>🗺 対応エリア：${x.coverage}<br>🕐 ${x.hours}<br>👤 ${x.person}<br>📅 最終更新：${x.updated}</div><p style="margin:8px 0 0">${x.note}</p></div><div class="resource-contact-v21">☎ <a href="tel:${x.phone}">${x.phone}</a><br><button class="secondary" onclick="openResourceEditor('edit','${x.id}')">✏️ 編集</button></div></div>`).join(''):'<div class="resource-empty-v21">条件に合う地域資源がありません。</div>';}
+function renderResourceAdmin(){const el=document.getElementById('resourceAdmin');if(!el)return;el.innerHTML=communityResources.map(x=>`<div class="resource-admin-card-v21"><h3>${x.typeLabel}：${x.name}</h3><p>📍 ${x.area}　☎ ${x.phone}　🗺 ${x.coverage}</p><div class="resource-admin-actions-v21"><button onclick="openResourceEditor('edit','${x.id}')">✏️ 編集</button><button onclick="openResourceEditor('new','${x.id}')">＋ この情報を複製して追加</button></div></div>`).join('');}
+function openResourceEditor(mode,id){const area=document.getElementById('resourceAdmin');if(!area)return;const x=mode==='edit'?communityResources.find(q=>q.id===id):(id?communityResources.find(q=>q.id===id):null);const d=x||{type:'center',typeLabel:'地域包括支援センター',name:'',area:'',address:'',phone:'',coverage:'',hours:'',services:[],person:'',updated:'',note:''};area.innerHTML=`<div class="resource-editor-v21"><h3 style="margin-top:0;color:#294e69">${mode==='edit'?'✏️ 情報を編集':'＋ 新しい地域資源を追加'}</h3><div class="edit-grid"><div><label>種別</label><select id="reType"><option value="center">地域包括支援センター</option><option value="nursing">訪問看護ステーション</option><option value="doctor">訪問診療</option></select></div><div><label>名称</label><input id="reName" value="${d.name}"></div><div><label>地域</label><input id="reArea" value="${d.area}"></div><div><label>住所</label><input id="reAddress" value="${d.address}"></div><div><label>電話番号</label><input id="rePhone" value="${d.phone}"></div><div><label>対応エリア</label><input id="reCoverage" value="${d.coverage}"></div><div><label>利用時間・受付時間</label><input id="reHours" value="${d.hours}"></div><div><label>担当者・連携窓口</label><input id="rePerson" value="${d.person}"></div><div style="grid-column:1/-1"><label>対応内容（カンマ区切り）</label><input id="reServices" value="${d.services.join('、')}" placeholder="例：24時間対応、看取り、認知症、緊急訪問"></div><div style="grid-column:1/-1"><label>備考</label><textarea id="reNote">${d.note}</textarea></div></div><button class="primary" onclick="saveResource('${mode}','${x?.id||''}')">保存する</button><button class="secondary" onclick="renderResourceAdmin()">キャンセル</button></div>`;document.getElementById('reType').value=d.type;area.scrollIntoView({behavior:'smooth',block:'start'});}
+function saveResource(mode,id){const type=document.getElementById('reType').value;const labels={center:'地域包括支援センター',nursing:'訪問看護ステーション',doctor:'訪問診療'};const obj={id:id||'r'+Date.now(),type,typeLabel:labels[type],name:document.getElementById('reName').value.trim(),area:document.getElementById('reArea').value.trim(),address:document.getElementById('reAddress').value.trim(),phone:document.getElementById('rePhone').value.trim(),coverage:document.getElementById('reCoverage').value.trim(),hours:document.getElementById('reHours').value.trim(),person:document.getElementById('rePerson').value.trim(),services:document.getElementById('reServices').value.split('、').map(v=>v.trim()).filter(Boolean),updated:new Date().toLocaleDateString('ja-JP'),note:document.getElementById('reNote').value.trim()};if(!obj.name){alert('名称を入力してください');return}if(mode==='edit'){const i=communityResources.findIndex(q=>q.id===id);if(i>=0)communityResources[i]=obj;}else communityResources.push(obj);renderResourceAdmin();searchResources();}
 </script></body></html>
+
+<style>
+/* v1.6 final layout correction */
+@media(min-width:701px){
+  main{margin-left:250px!important;width:calc(100% - 250px)!important;padding:28px 28px 40px!important;box-sizing:border-box!important;overflow-x:hidden!important}
+  #manage{width:100%!important;max-width:none!important;box-sizing:border-box!important}
+  #manage .management-grid{width:100%!important;max-width:none!important;display:grid!important;grid-template-columns:1fr!important;gap:14px!important}
+  #manage .management-card{
+    width:100%!important;
+    box-sizing:border-box!important;
+    display:grid!important;
+    grid-template-columns:82px minmax(240px,1.35fr) minmax(190px,.9fr) minmax(190px,.9fr)!important;
+    align-items:center!important;
+    gap:18px!important;
+    padding:20px!important;
+    overflow:hidden!important;
+  }
+  #manage .management-description{min-width:0!important}
+  #manage .management-description p{overflow-wrap:anywhere!important}
+  #manage .management-action{min-width:0!important}
+}
+@media(min-width:701px) and (max-width:1050px){
+  #manage .management-card{
+    grid-template-columns:64px minmax(180px,1fr) minmax(150px,.8fr)!important;
+  }
+  #manage .management-card .management-action:last-child{grid-column:3}
+}
+@media(max-width:700px){
+  main{margin-left:0!important;width:100%!important;padding:18px 13px 82px!important}
+  #manage{width:100%!important}
+  #manage .management-card{width:100%!important;box-sizing:border-box!important}
+}
+</style>
